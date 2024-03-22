@@ -1,0 +1,81 @@
+/* 
+   Written by Edouard TISSERANT (C) 2024
+   This file is part of Beremiz runtime and IDE
+   See COPYING.Runtime and COPYING file for copyrights details.
+*/
+
+/****************************************************************************************************************************
+ * This portion of the code originates from the Beremiz project, which is licensed under the GNU General Public License 
+ * Version 2 (GPLv2). It has been temporarily incorporated into our current project, which is under the Apache License 
+ * Version 2.0. We are aware of the licensing incompatibility between GPLv2 and Apache License Version 2.0 and are 
+ * actively working on developing a more suitable solution tailored to our specific needs. This integration is 
+ * provisional, and our goal is to replace this temporary implementation with our own, fully compliant version as soon 
+ * as possible. We acknowledge the contribution of the MatIEC project and intend to ensure all uses are in line with 
+ * its licensing terms during this transitional period. All users of this code are advised to consider the licensing 
+ * implications of the GPLv3 and Apache License Version 2.0.
+ ****************************************************************************************************************************/
+program erpc_PLCObject
+
+struct PSKID {
+    string ID;
+    string PSK;
+};
+
+enum PLCstatus_enum {
+    Empty
+    Stopped,
+    Started,
+    Broken,
+    Disconnected
+}
+
+struct PLCstatus {
+    PLCstatus_enum PLCstatus;
+    uint32[4] logcounts;
+};
+
+struct trace_sample {
+    uint32 tick;
+    binary TraceBuffer;
+};
+
+struct TraceVariables {
+    PLCstatus_enum PLCstatus;
+    list<trace_sample> traces;
+};
+
+struct extra_file {
+    string fname;
+    binary blobID;
+};
+
+struct trace_order {
+    uint32 idx;
+    binary force;
+};
+
+struct log_message {
+    string msg;
+    uint32 tick;
+    uint32 sec;
+    uint32 nsec;
+};
+
+
+interface BeremizPLCObjectService {
+    AppendChunkToBlob(in binary data, in binary blobID, out binary newBlobID) -> uint32
+    GetLogMessage(in uint8 level, in uint32 msgID, out log_message message) -> uint32
+    GetPLCID(out PSKID plcID) -> uint32
+    GetPLCstatus(out PLCstatus status) -> uint32
+    GetTraceVariables(in uint32 debugToken, out TraceVariables traces) -> uint32
+    MatchMD5(in string MD5, out bool match) -> uint32
+    NewPLC(in string md5sum, in binary plcObjectBlobID, in list<extra_file> extrafiles, out bool success) -> uint32
+    PurgeBlobs() -> uint32
+    /* NOT TO DO : RemoteExec(in ) -> uint32 */
+    RepairPLC() -> uint32
+    ResetLogCount() -> uint32
+    SeedBlob(in binary seed, out binary blobID) -> uint32
+    SetTraceVariablesList(in list<trace_order> orders, out uint32 debugtoken) -> uint32
+    StartPLC() -> uint32
+    StopPLC(out bool success) -> uint32
+}

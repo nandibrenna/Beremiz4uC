@@ -1,0 +1,310 @@
+/*
+ * Copyright (c) 2017 Linaro Limited
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/f4/stm32f407Xe.dtsi>
+#include <st/f4/stm32f407v(e-g)tx-pinctrl.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	model = "STM32F407VE development board"; 
+	compatible = "st,stm32f407";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,ccm = &ccm0;
+		zephyr,canbus = &can1;		
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		green_led_1: led_1 {
+			gpios = <&gpioa 6 GPIO_ACTIVE_LOW>;
+			label = "LED D1";
+		};
+		green_led_2: led_2 {
+			gpios = <&gpioa 7 GPIO_ACTIVE_LOW>;
+			label = "LED D2";
+		};
+	};
+	
+	outputs {
+		compatible = "gpio-leds";
+
+		out0: out_b0 {
+			gpios = <&i2c1_mcp230xx 8 GPIO_ACTIVE_LOW>;
+			label = "LED XB0";
+		};
+		
+		out1: out_b1 {
+			gpios = <&i2c1_mcp230xx 9 GPIO_ACTIVE_LOW>;
+			label = "LED XB1";
+		};
+		out2: out_b2 {
+			gpios = <&i2c1_mcp230xx 10 GPIO_ACTIVE_LOW>;
+			label = "LED XB2";
+		};
+		out3: out_b3 {
+			gpios = <&i2c1_mcp230xx 11 GPIO_ACTIVE_LOW>;
+			label = "LED XB3";
+		};
+		out4: out_b4 {
+			gpios = <&i2c1_mcp230xx 12 GPIO_ACTIVE_LOW>;
+			label = "LED XB4";
+		};
+		out5: out_b5 {
+			gpios = <&i2c1_mcp230xx 13 GPIO_ACTIVE_LOW>;
+			label = "LED XB5";
+		};
+		out6: out_b6 {
+			gpios = <&i2c1_mcp230xx 14 GPIO_ACTIVE_LOW>;
+			label = "LED XB6";
+		};
+		out7: out_b7 {
+			gpios = <&i2c1_mcp230xx 15 GPIO_ACTIVE_LOW>;
+			label = "LED XB7";
+		};
+	};
+
+	inputs {
+		compatible = "gpio-keys";
+		in0: in_a0 {
+			gpios = <&i2c1_mcp230xx 0 GPIO_ACTIVE_HIGH>;
+			zephyr,code = <INPUT_KEY_0>;
+			label = "Input XA0";
+		};
+		in1: in_a1 {
+			gpios = <&i2c1_mcp230xx 1 GPIO_ACTIVE_HIGH>;
+			label = "Input XA1";
+		};
+		in2: in_a2 {
+			gpios = <&i2c1_mcp230xx 2 GPIO_ACTIVE_HIGH>;
+			label = "Input XA2";
+		};
+		in3: in_a3 {
+			gpios = <&i2c1_mcp230xx 3 GPIO_ACTIVE_HIGH>;
+			label = "Input XA3";
+		};
+		in4: in_a4 {
+			gpios = <&i2c1_mcp230xx 4 GPIO_ACTIVE_HIGH>;
+			label = "Input XA4";
+		};
+		in5: in_a5 {
+			gpios = <&i2c1_mcp230xx 5 GPIO_ACTIVE_HIGH>;
+			label = "Input XA5";
+		};
+		in6: in_a6 {
+			gpios = <&i2c1_mcp230xx 6 GPIO_ACTIVE_HIGH>;
+			label = "Input XA6";
+		};
+		in7: in_a7 {
+			gpios = <&i2c1_mcp230xx 7 GPIO_ACTIVE_HIGH>;
+			label = "Input XA7";
+		};
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		user_button_1: button_1 {
+			label = "Button WK_UP";
+			gpios = <&gpioa 1 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
+			zephyr,code = <INPUT_KEY_0>;
+		};
+		user_button_2: button_2 {
+			label = "Button K0";
+			gpios = <&gpioe 4 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_1>;
+		};
+		user_button_3: button_3 {
+			label = "Button K1";
+			gpios = <&gpioe 3 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_2>;
+		};
+	};
+
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs1: lfs1 {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/lfs:";
+			partition = <&storage_partition>;
+			automount;
+			read-size = <256>;
+			prog-size = <256>;
+			cache-size = <256>;
+			lookahead-size = <256>;
+			block-cycles = <512>;
+		};
+	};
+
+	aliases {
+		usart-console = &usart1;
+		usart-modbus  = &usart2;
+		usart-tdebug  = &usart3;
+		led0 = &green_led_1;
+		led1 = &green_led_2;
+		sw0 = &user_button_1;
+		sw1 = &user_button_2;
+		sw2 = &user_button_3;
+		spi-flash0 = &w25q64;
+		out0 = &out0;
+		out1 = &out1;
+		out2 = &out2;
+		out3 = &out4;
+	};
+};
+
+&usart1 {	// USART1 is connected to MAX232 
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart2 {	// USART2 is connected to RS485 DE is on PD7
+	pinctrl-0 = <&usart2_tx_pd5 &usart2_rx_pd6>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+	modbus0 {
+		compatible = "zephyr,modbus-serial";
+		status = "okay";
+		de-gpios =<&gpiod 7 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&usart3 {	// USART3 is connected to PinHeader5 TX 14 RX 11
+	pinctrl-0 = <&usart3_tx_pd8 &usart3_rx_pd9>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&can1 {
+	pinctrl-0 = <&can1_rx_pd0 &can1_tx_pd1>;
+	pinctrl-names = "default";
+	bus-speed = <125000>;
+	status = "okay";
+};
+
+&can2 {
+	pinctrl-0 = <&can2_rx_pb5 &can2_tx_pb6>;
+	pinctrl-names = "default";
+	bus-speed = <125000>;
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-0 = < &i2c1_scl_pb8 &i2c1_sda_pb9 >;
+	status = "okay";
+	pinctrl-names = "default";
+	clock-frequency = <I2C_BITRATE_FAST>;
+	i2c1_mcp230xx: mcp230xx@20 {
+		compatible = "microchip,mcp230xx";
+		reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <16>;
+	};
+};
+
+// W5500 Ethernet
+&spi2 {
+	pinctrl-0 = <&spi2_sck_pb10 &spi2_miso_pc2 &spi2_mosi_pc3>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	cs-gpios = <&gpioc 0 GPIO_ACTIVE_LOW>;
+	w5500: w5500@0 {
+        compatible = "wiznet,w5500";
+		local-mac-address = [00 00 12 13 00 10];
+        reg = <0x0>;
+        spi-max-frequency = <80000000>;
+        int-gpios = <&gpioc 1 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpioe 6 GPIO_ACTIVE_LOW>;
+    };
+};
+
+// W25Q16 Flash 2MB
+&spi3 {
+	pinctrl-0 = <&spi3_sck_pb3 &spi3_miso_pb4 &spi3_mosi_pb5>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	cs-gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
+	w25q64: w25q64jv@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <80000000>;
+		jedec-id = [ef 40 17];
+		size = <0x4000000>;
+		has-dpd;
+		t-enter-dpd = <3500>;
+		t-exit-dpd = <3500>;
+	};
+};
+
+&w25q64 {
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+		/* 8 MB partition */
+		storage_partition: partition@0 {
+			label = "storage";
+			reg = <0x00000000 DT_SIZE_M(8)>;
+		}; 
+    };
+};
+
+&clk_lse {
+	status = "okay";
+};
+
+&clk_lsi {
+	status = "okay";
+};
+
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;
+	status = "okay";
+};
+
+&pll {
+	div-m = <4>;
+	mul-n = <168>;
+	div-p = <2>;
+	div-q = <7>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(168)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <4>;
+	apb2-prescaler = <2>;
+};
+
+&rtc {
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x10000000>,
+		 //<&rcc STM32_SRC_LSI RTC_SEL(2)>;
+		 <&rcc STM32_SRC_LSE RTC_SEL(1)>;
+	status = "okay";
+
+	backup_regs {
+		status = "okay";
+	};
+};
+
+&rng {
+	status = "okay";
+};

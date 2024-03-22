@@ -1,0 +1,13 @@
+# editors
+*.swp
+*~
+**/.vscode/
+**/c_cpp_properties.json
+
+# python
+.venv
+
+# build
+**/build/
+/twister-out*
+__pycache__/

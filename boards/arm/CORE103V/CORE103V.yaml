@@ -1,0 +1,20 @@
+identifier: CORE103V
+name: CORE103V
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 64
+flash: 512
+supported:
+  - gpio
+  - i2c
+  - spi
+  - pwm
+  - watchdog
+  - adc
+  - counter
+  - spi-flash
+vendor: st

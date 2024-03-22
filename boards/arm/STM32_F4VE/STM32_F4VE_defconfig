@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# SOC Configuration
+CONFIG_SOC_SERIES_STM32F4X=y
+CONFIG_SOC_STM32F407XE=y
+
+# Networking W5500 Configuration
+CONFIG_ETH_W5500=y
+
+# Enable Clocks
+CONFIG_CLOCK_CONTROL=y
+
+# enable pin controller
+CONFIG_PINCTRL=y

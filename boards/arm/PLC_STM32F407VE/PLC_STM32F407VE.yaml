@@ -1,0 +1,20 @@
+identifier: BOARD_PLC_STM32F407VE
+name: BOARD_PLC_STM32F407VE
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+ram: 128
+flash: 512
+supported:
+  - usb
+  - netif:eth
+  - i2c
+  - spi
+  - gpio
+  - usb_device
+  - watchdog
+
+vendor: custom

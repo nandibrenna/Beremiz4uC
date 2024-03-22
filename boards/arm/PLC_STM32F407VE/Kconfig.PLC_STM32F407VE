@@ -1,0 +1,8 @@
+# STM32F4DISCOVERY board configuration
+
+# Copyright (c) 2016 Linaro Limited.
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_STM32_F4VE
+	bool "STM32F4 Development Board"
+	depends on SOC_STM32F407XE

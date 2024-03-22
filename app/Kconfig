@@ -1,0 +1,114 @@
+# Copyright (c) 2019 Peter Bigot Consulting, LLC
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "Beremiz_RTE"
+	menu "Beremiz RTE Configuration"
+
+		choice
+			prompt "IO Configuration (Test)"
+			default IO_TEST_I2C_GPIO
+
+		config IO_TEST_I2C_GPIO
+			bool "GPIO I2C MCP23017"
+			help
+				GPIO via I2C on MCP23017
+				Output B0..B7
+				Input A0..A7
+				Run_Led is on STM32 Port_E Pin_13
+
+		config IO_TEST_STM32_GPIO
+			bool "STM32 GPIO"
+			help
+				GPIO via STM32 GPIO 
+				Out 0 is Port_E Pin_14
+				Out 1 is Port_E Pin_15
+				Run_Led is Port_E Pin_13
+
+		endchoice
+
+		menu "Utility Functions"	
+			config SIMPLE_THREAD_STACK_MONITORING
+				bool "Simple Thread Stack Monitoring"
+				imply THREAD_NAME
+				imply THREAD_RUNTIME_STATS
+				imply THREAD_STACK_INFO
+				imply DEBUG_THREAD_INFO
+				imply THREAD_ANALYZER
+				help
+					Enables simple monitoring of the thread stack to detect
+					overflows and other issues.
+
+			config PLC_SHELL_COMMANDS
+				bool "PLC Shell Commands"
+				depends on SHELL
+				help
+					Adds specific shell commands for PLC configuration and
+					control. Requires the shell component.
+			
+			config PLC_SHELL_TEST_COMMANDS
+				bool "PLC Shell Test Commands"
+				depends on PLC_SHELL_COMMANDS
+				help
+					Adds additional shell commands for testing purposes.
+					Requires the activation of PLC Shell Commands.
+
+		endmenu
+
+		menu "udynlink"
+
+			config UDYNLINK
+				bool "UDYNLINK"
+				default y
+				help
+					Enable UDYNLINK, dynamic linker for ARM Cortex-M
+					see https://github.com/bogdanm/udynlink
+					and https://github.com/kinsamanka/udynlink
+				
+				if UDYNLINK
+					config UDYNLINK_BUFFER_SIZE
+						int "UDYNLINK_BUFFER_SIZE"
+						default 16384
+						help
+							Set the size of the buffer used by UDYNLINK
+
+					module = UDYNLINK
+					module-str = udynlink
+					source "subsys/logging/Kconfig.template.log_config"
+				endif # UDYNLINK
+		endmenu
+		
+		menu "Storage"
+			config APP_WIPE_STORAGE
+				bool "Option to clear the flash area before mounting"
+				default n
+				help
+					Use this to force an existing file system to be created.
+
+			config APP_STORAGE_FLASH_LITTLEFS
+				bool "Use FLASH disk and LittleFS"
+				default y
+				imply DISK_DRIVER_FLASH
+				imply FILE_SYSTEM
+				imply FILE_SYSTEM_LITTLEFS
+			help
+				Use external Flash memory and the LittleFS file system.
+
+			config APP_STORAGE_SDCARD_FATFS
+				bool "Use SD and FAT file system"
+				imply DISK_DRIVER_SDMMC
+				imply FILE_SYSTEM
+				imply FAT_FILESYSTEM_ELM
+			help
+				Use SD card and FAT file system.
+						
+			if DISK_DRIVER_FLASH
+				config FLASH_MAP
+					default y
+				config FLASH_PAGE_LAYOUT
+					default y
+				config FLASH_LOG_LEVEL
+					default 3
+			endif # DISK_DRIVER_FLASH
+		endmenu
+	endmenu
+source "Kconfig.zephyr"

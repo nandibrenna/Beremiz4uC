@@ -1,0 +1,200 @@
+/*
+ * Copyright (c) 2020 WuhanStudio
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/f1/stm32f103Xe.dtsi>
+#include <st/f1/stm32f103r(c-d-e)tx-pinctrl.dtsi>
+
+/ {
+	model = "STM32 core103v board";
+	compatible = "stm32f103";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		g_led_1: led_1 {
+			gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
+			label = "User LD1";
+		};
+		g_led_2: led_2 {
+			gpios = <&gpiob 1 GPIO_ACTIVE_LOW>;
+			label = "User LD2";
+		};
+		g_led_3: led_3 {
+			gpios = <&gpiod 0 GPIO_ACTIVE_LOW>;
+			label = "User LD3";
+		};
+		g_led_4: led_4 {
+			gpios = <&gpiod 1 GPIO_ACTIVE_LOW>;
+			label = "User LD4";
+		};
+	};
+	
+	fstab {
+		compatible = "zephyr,fstab";
+		lfs1: lfs1 {
+			compatible = "zephyr,fstab,littlefs";
+			mount-point = "/lfs:";
+			partition = <&storage_partition>;
+			automount;
+			read-size = <256>;
+			prog-size = <256>;
+			cache-size = <256>;
+			lookahead-size = <256>;
+			block-cycles = <512>;
+		};
+	};
+
+	aliases {
+		led0 = &g_led_1;
+		led1 = &g_led_2;
+		led2 = &g_led_3;
+		led3 = &g_led_4;
+		watchdog0 = &iwdg;
+		die-temp0 = &die_temp;
+		spi-flash0 = &w25q64;
+	};
+};
+
+&clk_lsi {
+	status = "okay";
+};
+
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;
+	status = "okay";
+};
+
+&pll {
+	mul = <9>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(72)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <2>;
+	apb2-prescaler = <1>;
+	/* usbpre not set: USB clock = 72 / 1.5: 48MHz */
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart2 {
+	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+};
+
+&usart3 {
+	pinctrl-0 = <&usart3_tx_pb10 &usart3_rx_pb11>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+};
+
+&i2c1 {
+	pinctrl-0 = <&i2c1_scl_remap1_pb8 &i2c1_sda_remap1_pb9>;
+	pinctrl-names = "default";
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_FAST>;
+};
+
+// W5500 Ethernet
+&spi1 {
+	pinctrl-0 = <&spi1_nss_master_pa4 &spi1_sck_master_pa5
+		     &spi1_miso_master_pa6 &spi1_mosi_master_pa7>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+	w5500: w5500@0 {
+        compatible = "wiznet,w5500";
+        reg = <0x0>;
+        spi-max-frequency = <10000000>;
+        int-gpios = <&gpiob 6 GPIO_ACTIVE_LOW>;
+    };
+};
+
+// W25Q64 Flash 8MB
+&spi2 {
+	pinctrl-0 = <&spi2_sck_pb10 &spi2_miso_pc2 &spi2_mosi_pc3>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	cs-gpios = <&gpioe 3 GPIO_ACTIVE_LOW>;
+		w25q64: w25q64jv@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <80000000>;
+		jedec-id = [ef 40 17];
+		size = <0x4000000>;
+		has-dpd;
+		t-enter-dpd = <3500>;
+		t-exit-dpd = <3500>;
+	};
+};
+
+&w25q64 {
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+		/* 8 MB partition */
+		storage_partition: partition@0 {
+			label = "storage";
+			reg = <0x00000000 DT_SIZE_M(8)>;
+		}; 
+    };
+};
+
+&iwdg {
+	status = "okay";
+};
+
+&timers1 {
+	st,prescaler = <10000>;
+	status = "okay";
+
+	pwm1: pwm {
+		status = "okay";
+		pinctrl-0 = <&tim1_ch1_pwm_out_pa8>;
+		pinctrl-names = "default";
+	};
+};
+
+zephyr_udc0: &usb {
+	pinctrl-0 = <&usb_dm_pa11 &usb_dp_pa12>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&rtc {
+	status = "disabled";
+};
+
+&adc1 {
+	pinctrl-0 = <&adc1_in0_pa0>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&die_temp {
+	status = "okay";
+};
